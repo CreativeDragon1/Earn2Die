@@ -1,27 +1,18 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
+// Firebase client config is public by design — safe to hardcode
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyC0lwcSGmiztkWNZFVEpABUk2EJF0ODOW8",
+  authDomain: "earn2die-91ae5.firebaseapp.com",
+  projectId: "earn2die-91ae5",
+  storageBucket: "earn2die-91ae5.firebasestorage.app",
+  messagingSenderId: "1063264758184",
+  appId: "1:1063264758184:web:9bda1c3bbbfa3d9f2dd59d",
 };
 
-// Only initialise Firebase if the config is present (env vars set).
-// Without this guard, calling initializeApp with undefined apiKey crashes
-// the whole app and produces a blank white/dark screen.
-export const firebaseConfigured = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+export const firebaseConfigured = true;
 
-let app: FirebaseApp | null = null;
-let _auth: Auth | null = null;
-
-if (firebaseConfigured) {
-  app = initializeApp(firebaseConfig);
-  _auth = getAuth(app);
-}
-
-export const auth = _auth;
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 export default app;
