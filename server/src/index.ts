@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 
 import { authRouter } from './routes/auth';
 import { townsRouter } from './routes/towns';
@@ -23,7 +24,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
-    : (process.env.NODE_ENV === 'production' ? [] : '*'),
+    : true,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
