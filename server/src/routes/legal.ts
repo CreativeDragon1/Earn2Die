@@ -173,8 +173,10 @@ router.post('/:id/verdict', authenticate, async (req: AuthRequest, res: Response
 
     const verdict = await prisma.verdict.create({
       data: {
-        ...data,
-        caseId: (req.params as Record<string, string>).id,
+        decision: data.decision,
+        reasoning: data.reasoning,
+        penalty: data.penalty,
+        caseId: (req as any).params.id,
         judgeId: req.player!.id,
       },
     });
@@ -214,8 +216,9 @@ router.post('/:id/comments', authenticate, async (req: AuthRequest, res: Respons
 
     const comment = await prisma.caseComment.create({
       data: {
-        ...data,
-        caseId: (req.params as Record<string, string>).id,
+        content: data.content,
+        isOfficial: data.isOfficial ?? false,
+        caseId: (req as any).params.id,
         authorId: req.player!.id,
       },
       include: { author: { select: { id: true, username: true } } },

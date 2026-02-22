@@ -2,14 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import admin from '../lib/firebase';
 import prisma from '../lib/prisma';
 
-export interface AuthRequest extends Request {
+export type AuthRequest = Request & {
   player?: {
     id: string;
     username: string;
     role: string;
     firebaseUid: string;
   };
-}
+};
 
 /**
  * Verifies the Firebase ID token from the Authorization header,
