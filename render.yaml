@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: earn2die-api
+    env: node
+    region: oregon
+    buildCommand: cd server && npm install && npm run build
+    startCommand: cd server && npx prisma db push && node dist/src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
