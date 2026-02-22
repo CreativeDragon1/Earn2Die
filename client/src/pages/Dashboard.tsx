@@ -5,8 +5,153 @@ import { LoadingSpinner, StatusBadge } from '../components/UI';
 import { useAuth } from '../hooks/useAuth';
 import {
   Castle, Swords, Eye, ShoppingBag, Scale, Users,
-  TrendingUp, Shield, Sparkles
+  TrendingUp, Shield, Sparkles, BookOpen, Scroll, Gavel, Megaphone
 } from 'lucide-react';
+
+const SERVER_INTRO = `Welcome to Earn2Die — a Minecraft civilization roleplay server where you build towns, forge alliances, declare wars, trade resources, and uphold justice. Every action has consequences. Every town tells a story.`;
+
+const INFO_TABS = [
+  {
+    id: 'roleplay-info',
+    label: 'Roleplay Info',
+    icon: BookOpen,
+    color: 'text-mc-green',
+    sections: [
+      {
+        title: 'Towns',
+        content: [
+          'To start a town, you need at least 5 members.',
+          'Notify a server admin to start a town — provide a list of members and town coordinates.',
+          'Once approved, a 150×150 plot is allocated. Each new registered member adds a 50×50 extension.',
+          'A stone wall must be built around the perimeter to mark town boundaries.',
+          'Every town must have at least one direct dirt path connection to another town (for trade).',
+          'Each town must write a constitution on a book & quill — one copy kept inside the town, one on a lectern at the entrance.',
+          'Each new member must be registered with the admin.',
+          'Town laws can be anything; no restrictions — but server laws always override town laws.',
+          'If a visitor breaks town law, the town leader is responsible for capturing and prosecuting the perpetrator via trial.',
+          'Any infrastructure built outside town walls has no protection status and cannot have legal action taken if griefed.',
+          'A town only gains protection status once all procedures are complete. Without it, griefing the town breaks no rules.',
+        ],
+      },
+      {
+        title: 'War',
+        content: [
+          'A formal declaration must be sent to the target town at least 24 hours before any hostile action.',
+          'Valid war reasons (usable in trial): suspicion of harbouring enemies, invasion for resources, revenge for espionage, or other justified reasons.',
+          'Towns cannot deal more damage than necessary.',
+          'ALLOWED targets: defence infrastructure (walls, traps), military infrastructure (weapons storage, outposts), town inventory.',
+          'PROHIBITED: arson on residential buildings, destroying homes, destroying farms (crops may be taken, infrastructure cannot), destroying decorations.',
+          'Victims may take legal action for war crimes.',
+        ],
+      },
+      {
+        title: 'Espionage',
+        content: [
+          'Paying town members to reveal secrets (loot locations, defence strength).',
+          'Disguising a player to infiltrate the target town as a member to sabotage or uncover secrets.',
+        ],
+      },
+      {
+        title: 'Trade',
+        content: [
+          'Any individual or town can open a store.',
+          'Stores cannot be griefed or stolen from — perpetrators face trial.',
+          'Store owners set their preferred currency and exchange rate.',
+          'Barter is allowed: resources can be traded for other resources at any ratio.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'roleplay-law',
+    label: 'Roleplay Law',
+    icon: Scroll,
+    color: 'text-mc-gold',
+    sections: [
+      {
+        title: 'Trials',
+        content: ['All trials take place at the courthouse near spawn.'],
+      },
+      {
+        title: 'Town Law Trials',
+        content: [
+          'Any constitutional town law that is broken is handled via trial.',
+          'The townspeople are the plaintiff; the accused is the defendant.',
+          'The server admin acts as judge; anyone from other towns may apply to be a jury member.',
+        ],
+      },
+      {
+        title: 'War Law Trials',
+        content: [
+          'The attacked town is the plaintiff; the attackers are the defendant.',
+          'The server admin acts as judge; anyone not affected by the conflict may apply to be a jury member.',
+          'Any war crimes (see Roleplay Info → War) can be presented to the judge.',
+          'If the plaintiff wins: the defendant must pay compensation as specified by the judge. Suspension or regulation of military activity may also be ordered.',
+        ],
+      },
+      {
+        title: 'Trade Law Trials',
+        content: [
+          'The store owner or loss bearer is the plaintiff; the accused is the defendant.',
+          'The server admin acts as judge; anyone may apply as jury — but members of the defendant\'s or plaintiff\'s town are inadmissible.',
+          'Robbery — 1st Offence: defendant pays value of goods taken + 10% to plaintiff.',
+          'Robbery — 2nd Offence: defendant pays value of goods taken + 50%, and/or banned from trading for 15 days; jailed for 2 in-game days.',
+          'Robbery — 3rd Offence: defendant pays double the value of goods taken; punishment decided internally — options include exile from town or jail for jury-determined duration.',
+        ],
+      },
+      {
+        title: 'Bounties',
+        content: ['Bounty system details coming soon.'],
+      },
+    ],
+  },
+  {
+    id: 'server-law',
+    label: 'Server Law',
+    icon: Gavel,
+    color: 'text-mc-red',
+    sections: [
+      {
+        title: 'Rules',
+        content: [
+          'No spawn trapping.',
+          '15,000 × 15,000 block world border.',
+          'Town destruction, griefing, and looting are NOT allowed unless war has been formally declared between the two towns.',
+          'Total base destruction is prohibited.',
+          'The End is disabled.',
+          'No mass TNT machines that cause lag (cannons are permitted).',
+          'PvP is allowed in non-civilised areas (outside all town walls).',
+          'Strictly no lag machines.',
+          'X-ray and combat hacks are prohibited.',
+          'No entity cramming — maximum 1 animal per 2 blocks.',
+          'ANYTHING outside town walls can be destroyed, and anyone outside town walls can be killed without consequence.',
+          'Underground bases (including cave bases) are STRICTLY prohibited. All respawn points must be on ground level.',
+          'No mob/XP farms — grinding is expected to maintain the spirit of the roleplay.',
+        ],
+      },
+      {
+        title: 'Penalties',
+        content: [
+          '1st offence: verbal warning.',
+          '2nd offence: final warning.',
+          '3rd offence: ban.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'announcements',
+    label: 'Announcements',
+    icon: Megaphone,
+    color: 'text-mc-aqua',
+    sections: [
+      {
+        title: 'Latest',
+        content: ['No announcements yet. Check back soon.'],
+      },
+    ],
+  },
+];
 
 export default function Dashboard() {
   const { isAuthenticated, player } = useAuth();
@@ -14,6 +159,7 @@ export default function Dashboard() {
   const [recentWars, setRecentWars] = useState<any[]>([]);
   const [recentTrades, setRecentTrades] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('roleplay-info');
 
   useEffect(() => {
     Promise.all([
@@ -58,6 +204,49 @@ export default function Dashboard() {
             <TrendingUp size={14} className="text-mc-green" />
           </div>
         )}
+      </div>
+
+      {/* Server Info Tabs */}
+      <div className="mc-card">
+        <p className="text-mc-gray text-sm text-center mb-6 max-w-2xl mx-auto leading-relaxed">{SERVER_INTRO}</p>
+        {/* Tab Buttons */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {INFO_TABS.map(({ id, label, icon: Icon, color }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === id
+                  ? `bg-mc-dark border border-mc-border ${color}`
+                  : 'text-mc-gray hover:text-white hover:bg-mc-dark/50'
+              }`}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+        {/* Tab Content */}
+        {INFO_TABS.filter(t => t.id === activeTab).map(tab => (
+          <div key={tab.id} className="space-y-6">
+            {tab.sections.map(section => (
+              <div key={section.title}>
+                <h3 className={`font-bold mb-3 flex items-center gap-2 ${tab.color}`}>
+                  <span className="w-1 h-4 rounded bg-current inline-block" />
+                  {section.title}
+                </h3>
+                <ul className="space-y-2">
+                  {section.content.map((line, i) => (
+                    <li key={i} className="flex gap-2 text-sm text-mc-gray leading-relaxed">
+                      <span className="text-mc-border mt-1.5 shrink-0">▸</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
       {/* Stats Grid */}
