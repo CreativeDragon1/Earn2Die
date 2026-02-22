@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth, firebaseConfigured } from '../lib/firebase';
 import type { Player } from '../types';
 
 interface AuthContextType {
@@ -48,6 +48,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If Firebase isn't configured (missing env vars), resolve loading immediately
+    // so the app renders rather than showing a blank screen.
+    if (!firebaseConfigured || !auth) {
+      setLoading(false);
+      return;
+    }
+
     const unsub = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
@@ -66,11 +73,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (!auth) throw new Error('Firebase is not configured. Set VITE_FIREBASE_* env vars.');
     await signInWithEmailAndPassword(auth, email, password);
     // onAuthStateChanged will pick up the new user and call syncProfile
   };
 
   const register = async (username: string, email: string, password: string, minecraftUuid?: string) => {
+    if (!auth) throw new Error('Firebase is not configured. Set VITE_FIREBASE_* env vars.');
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     // Sync profile to our DB immediately with the username
     const profile = await syncProfile(cred.user, { username, minecraftUuid });
@@ -78,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut(auth);
+    if (auth) await signOut(auth);
     setPlayer(null);
   };
 

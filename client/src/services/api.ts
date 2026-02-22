@@ -9,7 +9,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   };
 
   // Attach Firebase ID token if a user is signed in
-  const user = auth.currentUser;
+  const user = auth?.currentUser;
   if (user) {
     const token = await user.getIdToken();
     headers['Authorization'] = `Bearer ${token}`;

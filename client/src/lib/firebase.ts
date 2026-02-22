@@ -1,8 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
 
-// These env vars are set from GitHub secrets via your CI/CD pipeline.
-// For local development, create client/.env.local with the VITE_FIREBASE_* values.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -12,6 +10,18 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Only initialise Firebase if the config is present (env vars set).
+// Without this guard, calling initializeApp with undefined apiKey crashes
+// the whole app and produces a blank white/dark screen.
+export const firebaseConfigured = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+
+let app: FirebaseApp | null = null;
+let _auth: Auth | null = null;
+
+if (firebaseConfigured) {
+  app = initializeApp(firebaseConfig);
+  _auth = getAuth(app);
+}
+
+export const auth = _auth;
 export default app;
