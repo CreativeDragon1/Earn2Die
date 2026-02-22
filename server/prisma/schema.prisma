@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── PLAYERS & AUTH ──────────────────────────────────────────────
+model Player {
+  id            String   @id @default(cuid())
+  firebaseUid   String   @unique
+  username      String   @unique
+  minecraftUuid String?  @unique
+  email         String   @unique
+  role          String   @default("player") // player | mod | admin
+  balance       Float    @default(0)
+  reputation    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  ownedTowns      Town[]           @relation("TownOwner")
+  townMemberships TownMember[]
+  warsInitiated   War[]            @relation("WarAttacker")
+  espionageReports EspionageReport[] @relation("SpyPlayer")
+  espionageTargets EspionageReport[] @relation("TargetPlayer")
+  tradeListings   TradeListing[]
+  tradesBuyer     TradeTransaction[] @relation("Buyer")
+  tradesSeller    TradeTransaction[] @relation("Seller")
+  legalCasesPlaintiff LegalCase[]  @relation("Plaintiff")
+  legalCasesDefendant LegalCase[]  @relation("Defendant")
+  legalCasesJudge     LegalCase[]  @relation("Judge")
+  verdicts        Verdict[]
+  caseComments    CaseComment[]
+}
+
+// ─── TOWNS & CLANS ───────────────────────────────────────────────
+model Town {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  description        String?
+  banner             String?  // URL to banner image
+  type               String   @default("settlement") // settlement | village | town | city | kingdom | empire
+  level              Int      @default(1)
+  treasury           Float    @default(0)
+  population         Int      @default(0)
+  territory          Int      @default(1) // number of chunks claimed
+  motto              String?
+  // Earn2Die specific
+  status             String   @default("pending_approval") // pending_approval | approved | rejected
+  coordinates        String?  // e.g. "X: 200, Z: -400"
+  hasWall            Boolean  @default(false)
+  hasPathConnection  Boolean  @default(false)
+  hasConstitution    Boolean  @default(false)
+  pendingMemberIds   String?  // JSON array of player IDs awaiting admin registration
+  protectionStatus   Boolean  @default(false) // true when all requirements met
+  foundedAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  ownerId     String
+  owner       Player       @relation("TownOwner", fields: [ownerId], references: [id])
+  members     TownMember[]
+  warsAsAttacker War[]     @relation("AttackingTown")
+  warsAsDefender War[]     @relation("DefendingTown")
+  alliances1  Alliance[]   @relation("AllianceTown1")
+  alliances2  Alliance[]   @relation("AllianceTown2")
+  espionageAgainst EspionageReport[] @relation("TargetTown")
+  tradeListings TradeListing[]
+  legalCases    LegalCase[] @relation("TownCase")
+}
+
+model TownMember {
+  id       String   @id @default(cuid())
+  role     String   @default("citizen") // citizen | officer | general | minister | leader
+  joinedAt DateTime @default(now())
+
+  playerId String   @unique   // one town forever — a player can never leave or join another
+  player   Player @relation(fields: [playerId], references: [id])
+  townId   String
+  town     Town   @relation(fields: [townId], references: [id], onDelete: Cascade)
+}
+
+// ─── WARS ────────────────────────────────────────────────────────
+model War {
+  id             String   @id @default(cuid())
+  title          String
+  reason         String   // harboring_enemies | resource_invasion | espionage_revenge | other_revenge | other
+  reasonDetails  String?  // extra context
+  status         String   @default("notice_sent") // notice_sent | active | ceasefire | ended
+  outcome        String?  // attacker_victory | defender_victory | draw | treaty
+  attackerScore  Int      @default(0)
+  defenderScore  Int      @default(0)
+  noticeSentAt   DateTime @default(now()) // war can only start 24h after this
+  startedAt      DateTime?
+  endedAt        DateTime?
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  attackerId      String
+  attacker        Player @relation("WarAttacker", fields: [attackerId], references: [id])
+  attackingTownId String
+  attackingTown   Town   @relation("AttackingTown", fields: [attackingTownId], references: [id])
+  defendingTownId String
+  defendingTown   Town   @relation("DefendingTown", fields: [defendingTownId], references: [id])
+  battles         Battle[]
+}
+
+model Battle {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  victor      String?  // attacker | defender
+  location    String?
+  foughtAt    DateTime @default(now())
+
+  warId String
+  war   War    @relation(fields: [warId], references: [id], onDelete: Cascade)
+}
+
+model Alliance {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("defensive") // defensive | offensive | trade | non_aggression
+  status    String   @default("active") // active | dissolved
+  formedAt  DateTime @default(now())
+  dissolvedAt DateTime?
+
+  town1Id String
+  town1   Town   @relation("AllianceTown1", fields: [town1Id], references: [id])
+  town2Id String
+  town2   Town   @relation("AllianceTown2", fields: [town2Id], references: [id])
+
+  @@unique([town1Id, town2Id])
+}
+
+// ─── ESPIONAGE ───────────────────────────────────────────────────
+model EspionageReport {
+  id           String   @id @default(cuid())
+  missionType  String   // infiltration | sabotage | intel | counter_spy | assassination
+  status       String   @default("pending") // pending | in_progress | completed | failed | intercepted
+  severity     String   @default("low") // low | medium | high | critical
+  title        String
+  details      String
+  evidence     String?  // URL or file references
+  intelGained  String?
+  isClassified Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  spyId      String
+  spy        Player @relation("SpyPlayer", fields: [spyId], references: [id])
+  targetPlayerId String?
+  targetPlayer   Player? @relation("TargetPlayer", fields: [targetPlayerId], references: [id])
+  targetTownId   String?
+  targetTown     Town?   @relation("TargetTown", fields: [targetTownId], references: [id])
+}
+
+// ─── TRADE & STORES ──────────────────────────────────────────────
+model TradeListing {
+  id              String   @id @default(cuid())
+  itemName        String
+  description     String?
+  category        String   @default("misc") // weapons | armor | tools | blocks | food | potions | enchants | misc
+  // Currency trade
+  price           Float    @default(0)
+  preferredCurrency String @default("diamonds") // diamonds | iron | gold | emeralds | other
+  // Resource-for-resource trade
+  isBarter        Boolean  @default(false)
+  barterItemName  String?  // what they want in exchange
+  barterQuantity  Int?     // how many of the barter item
+  quantity        Int      @default(1)
+  status          String   @default("active") // active | sold | expired | cancelled
+  isFeatured      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  sellerId String
+  seller   Player @relation(fields: [sellerId], references: [id])
+  townId   String?
+  town     Town?  @relation(fields: [townId], references: [id])
+  transactions TradeTransaction[]
+}
+
+model TradeTransaction {
+  id          String   @id @default(cuid())
+  quantity    Int
+  totalPrice  Float
+  completedAt DateTime @default(now())
+
+  listingId String
+  listing   TradeListing @relation(fields: [listingId], references: [id])
+  buyerId   String
+  buyer     Player       @relation("Buyer", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    Player       @relation("Seller", fields: [sellerId], references: [id])
+}
+
+// ─── LEGAL SYSTEM ────────────────────────────────────────────────
+model LegalCase {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String   @default("dispute") // dispute | criminal | appeal | treaty_violation | land_claim
+  status      String   @default("filed") // filed | under_review | trial | deliberation | closed
+  priority    String   @default("normal") // low | normal | high | urgent
+  evidence    String?
+  filedAt     DateTime @default(now())
+  trialDate   DateTime?
+  closedAt    DateTime?
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  plaintiffId String
+  plaintiff   Player  @relation("Plaintiff", fields: [plaintiffId], references: [id])
+  defendantId String
+  defendant   Player  @relation("Defendant", fields: [defendantId], references: [id])
+  judgeId     String?
+  judge       Player? @relation("Judge", fields: [judgeId], references: [id])
+  townId      String?
+  town        Town?   @relation("TownCase", fields: [townId], references: [id])
+  verdict     Verdict?
+  comments    CaseComment[]
+}
+
+model Verdict {
+  id        String   @id @default(cuid())
+  decision  String   // guilty | not_guilty | settled | dismissed
+  reasoning String
+  penalty   String?
+  issuedAt  DateTime @default(now())
+
+  caseId  String    @unique
+  case    LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  judgeId String
+  judge   Player    @relation(fields: [judgeId], references: [id])
+}
+
+model CaseComment {
+  id        String   @id @default(cuid())
+  content   String
+  isOfficial Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  caseId   String
+  case     LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId String
+  author   Player    @relation(fields: [authorId], references: [id])
+}

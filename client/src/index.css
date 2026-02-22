@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2d2d5e #1a1a2e;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: #1a1a2e;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: #2d2d5e;
+    border-radius: 4px;
+  }
+
+  body {
+    @apply bg-mc-darker text-white antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::selection {
+    background: rgba(85, 255, 85, 0.3);
+    color: #55ff55;
+  }
+}
+
+@layer components {
+  .mc-card {
+    @apply bg-mc-card border border-mc-border rounded-lg p-6 transition-all duration-200;
+  }
+  .mc-card:hover {
+    @apply border-mc-green/30 shadow-lg shadow-mc-green/5;
+  }
+
+  .mc-btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-mc-dark;
+  }
+  .mc-btn-primary {
+    @apply mc-btn bg-mc-green/20 text-mc-green border border-mc-green/30 
+           hover:bg-mc-green/30 hover:shadow-lg hover:shadow-mc-green/10 focus:ring-mc-green;
+  }
+  .mc-btn-danger {
+    @apply mc-btn bg-mc-red/20 text-mc-red border border-mc-red/30 
+           hover:bg-mc-red/30 hover:shadow-lg hover:shadow-mc-red/10 focus:ring-mc-red;
+  }
+  .mc-btn-gold {
+    @apply mc-btn bg-mc-gold/20 text-mc-gold border border-mc-gold/30 
+           hover:bg-mc-gold/30 hover:shadow-lg hover:shadow-mc-gold/10 focus:ring-mc-gold;
+  }
+  .mc-btn-blue {
+    @apply mc-btn bg-mc-blue/20 text-mc-blue border border-mc-blue/30 
+           hover:bg-mc-blue/30 hover:shadow-lg hover:shadow-mc-blue/10 focus:ring-mc-blue;
+  }
+
+  .mc-input {
+    @apply w-full px-4 py-2.5 bg-mc-dark border border-mc-border rounded-lg 
+           text-white placeholder-mc-gray/50
+           focus:outline-none focus:ring-2 focus:ring-mc-green/50 focus:border-mc-green/50
+           transition-all duration-200;
+  }
+
+  .mc-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .mc-heading {
+    @apply font-minecraft text-sm tracking-wider uppercase;
+  }
+}
