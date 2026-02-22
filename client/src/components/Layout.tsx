@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-const ANNOUNCEMENTS = [
+interface Announcement { id: string; title: string; body: string; date: string; }
+const ANNOUNCEMENTS: Announcement[] = [
   // Add announcements here as { id, title, body, date } objects
   // { id: '1', title: 'Server launch!', body: 'Welcome to Earn2Die.', date: 'Feb 22 2026' },
 ];
