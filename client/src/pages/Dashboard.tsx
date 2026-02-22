@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { LoadingSpinner, StatusBadge } from '../components/UI';
+import { StatusBadge, Skeleton } from '../components/UI';
 import { useAuth } from '../hooks/useAuth';
 import {
   Castle, Swords, Eye, ShoppingBag, Scale, Users,
@@ -174,8 +174,7 @@ export default function Dashboard() {
     });
   }, []);
 
-  if (loading) return <LoadingSpinner text="Loading server data..." />;
-
+  // No full-page block — render immediately, skeletons fill in
   const statCards = [
     { label: 'Players Online', value: stats?.playerCount ?? 0, icon: Users, color: 'text-mc-green', bg: 'bg-mc-green/10' },
     { label: 'Active Towns', value: stats?.townCount ?? 0, icon: Castle, color: 'text-mc-gold', bg: 'bg-mc-gold/10' },
@@ -251,15 +250,23 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="mc-card text-center">
-            <div className={`inline-flex p-3 rounded-lg ${bg} mb-3`}>
-              <Icon className={`w-6 h-6 ${color}`} />
-            </div>
-            <div className={`text-2xl font-bold ${color}`}>{value}</div>
-            <div className="text-mc-gray text-xs mt-1">{label}</div>
-          </div>
-        ))}
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="mc-card text-center space-y-3">
+                <Skeleton className="w-12 h-12 rounded-lg mx-auto" />
+                <Skeleton className="h-7 w-10 mx-auto" />
+                <Skeleton className="h-3 w-20 mx-auto" />
+              </div>
+            ))
+          : statCards.map(({ label, value, icon: Icon, color, bg }) => (
+              <div key={label} className="mc-card text-center">
+                <div className={`inline-flex p-3 rounded-lg ${bg} mb-3`}>
+                  <Icon className={`w-6 h-6 ${color}`} />
+                </div>
+                <div className={`text-2xl font-bold ${color}`}>{value}</div>
+                <div className="text-mc-gray text-xs mt-1">{label}</div>
+              </div>
+            ))}
       </div>
 
       {/* Quick Actions */}
@@ -290,7 +297,11 @@ export default function Dashboard() {
             </h2>
             <Link to="/wars" className="text-mc-green text-sm hover:underline">View all</Link>
           </div>
-          {recentWars.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+            </div>
+          ) : recentWars.length === 0 ? (
             <p className="text-mc-gray text-sm py-4 text-center">Peace prevails... for now.</p>
           ) : (
             <div className="space-y-3">
@@ -321,7 +332,11 @@ export default function Dashboard() {
             </h2>
             <Link to="/trade" className="text-mc-green text-sm hover:underline">View all</Link>
           </div>
-          {recentTrades.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
+            </div>
+          ) : recentTrades.length === 0 ? (
             <p className="text-mc-gray text-sm py-4 text-center">No items listed yet.</p>
           ) : (
             <div className="space-y-3">

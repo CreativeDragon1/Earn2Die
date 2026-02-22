@@ -1,6 +1,21 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-mc-border/20 ${className}`} />;
+}
+
+export function SkeletonCard({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="mc-card space-y-3">
+      <Skeleton className="h-5 w-1/3" />
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className={`h-4 ${i % 2 === 0 ? 'w-full' : 'w-4/5'}`} />
+      ))}
+    </div>
+  );
+}
+
 export function LoadingSpinner({ text = 'Loading...' }: { text?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
