@@ -24,8 +24,12 @@ export default function Login() {
         'auth/user-not-found': 'No account found with that email.',
         'auth/wrong-password': 'Incorrect password.',
         'auth/too-many-requests': 'Too many attempts. Try again later.',
+        'auth/operation-not-allowed': 'Email/password sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+        'auth/unauthorized-domain': 'This domain is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains.',
+        'auth/network-request-failed': 'Network error. Check your connection.',
+        'auth/invalid-email': 'Invalid email address.',
       };
-      setError(msg[err.code] ?? err.message);
+      setError(msg[err.code] ?? `${err.code ?? 'Error'}: ${err.message}`);
     } finally {
       setLoading(false);
     }
