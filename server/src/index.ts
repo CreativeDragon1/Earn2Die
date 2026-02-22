@@ -22,7 +22,12 @@ const PORT = process.env.PORT || 3001;
 
 // Security & parsing
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : '*' }));
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : (process.env.NODE_ENV === 'production' ? [] : '*'),
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
