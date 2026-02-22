@@ -5,8 +5,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import path from 'path';
 
 import { authRouter } from './routes/auth';
 import { townsRouter } from './routes/towns';
@@ -54,21 +52,15 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
 });
 
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  const clientPath = path.join(__dirname, '../../client/dist');
-  app.use(express.static(clientPath));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(clientPath, 'index.html'));
-  });
-}
-
 // Error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`⚔️  Earn2Die Server API running on port ${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Only listen when running locally (not on Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`⚔️  Earn2Die Server API running on port ${PORT}`);
+    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
 
 export default app;
