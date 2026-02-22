@@ -25,8 +25,11 @@ export default function Register() {
         'auth/email-already-in-use': 'This email is already registered.',
         'auth/weak-password': 'Password must be at least 6 characters.',
         'auth/invalid-email': 'Invalid email address.',
+        'auth/operation-not-allowed': 'Email/password sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+        'auth/unauthorized-domain': 'This domain is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains.',
+        'auth/network-request-failed': 'Network error. Check your connection.',
       };
-      setError(msg[err.code] ?? err.message);
+      setError(msg[err.code] ?? `${err.code ?? 'Error'}: ${err.message}`);
     } finally {
       setLoading(false);
     }

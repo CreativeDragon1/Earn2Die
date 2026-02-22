@@ -61,7 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const profile = await syncProfile(user);
           setPlayer(profile);
-        } catch {
+        } catch (e) {
+          console.error('[syncProfile error]', e);
           setPlayer(null);
         }
       } else {
