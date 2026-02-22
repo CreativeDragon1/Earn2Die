@@ -92,3 +92,4 @@ NODE_ENV=development
 | Trade       | /api/trade/*         | Marketplace & stores     |
 | Legal       | /api/legal/*         | Disputes & trials        |
 | Players     | /api/players/*       | Player management        |
+# Earn2Die
