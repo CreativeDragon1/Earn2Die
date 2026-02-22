@@ -12,6 +12,7 @@ const Espionage = lazy(() => import('./pages/Espionage'));
 const Trade = lazy(() => import('./pages/Trade'));
 const Legal = lazy(() => import('./pages/Legal'));
 const CaseDetail = lazy(() => import('./pages/CaseDetail'));
+const Rules = lazy(() => import('./pages/Rules'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="trade" element={<Trade />} />
           <Route path="legal" element={<Legal />} />
           <Route path="legal/:id" element={<CaseDetail />} />
+          <Route path="rules" element={<Rules />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

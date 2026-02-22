@@ -1,24 +1,31 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
-  Swords, Castle, Scroll, Eye, ShoppingBag, Scale, Home,
-  LogOut, User, Menu, X
+  Swords, Castle, Eye, ShoppingBag, Scale, Home,
+  LogOut, User, Menu, X, BookOpen, Bell
 } from 'lucide-react';
 import { useState } from 'react';
 
+const ANNOUNCEMENTS = [
+  // Add announcements here as { id, title, body, date } objects
+  // { id: '1', title: 'Server launch!', body: 'Welcome to Earn2Die.', date: 'Feb 22 2026' },
+];
+
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: Home },
+  { path: '/', label: 'Home', icon: Home },
   { path: '/towns', label: 'Towns', icon: Castle },
   { path: '/wars', label: 'Wars', icon: Swords },
   { path: '/espionage', label: 'Espionage', icon: Eye },
   { path: '/trade', label: 'Trade', icon: ShoppingBag },
   { path: '/legal', label: 'Legal', icon: Scale },
+  { path: '/rules', label: 'Rules', icon: BookOpen },
 ];
 
 export default function Layout() {
   const { player, logout, isAuthenticated } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,6 +64,42 @@ export default function Layout() {
             </nav>
 
             <div className="flex items-center gap-3">
+              {/* Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setBellOpen(!bellOpen)}
+                  className="p-2 text-mc-gray hover:text-white transition-colors relative"
+                  title="Announcements"
+                >
+                  <Bell size={18} />
+                  {ANNOUNCEMENTS.length > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-mc-red rounded-full" />
+                  )}
+                </button>
+                {bellOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-mc-dark border border-mc-border rounded-xl shadow-xl z-50 animate-slide-up">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-mc-border">
+                      <span className="font-semibold text-sm">Announcements</span>
+                      <button onClick={() => setBellOpen(false)} className="text-mc-gray hover:text-white text-lg leading-none">&times;</button>
+                    </div>
+                    {ANNOUNCEMENTS.length === 0 ? (
+                      <p className="text-mc-gray text-sm text-center py-8 px-4">No announcements yet.</p>
+                    ) : (
+                      <ul className="divide-y divide-mc-border max-h-80 overflow-y-auto">
+                        {ANNOUNCEMENTS.map((a: any) => (
+                          <li key={a.id} className="px-4 py-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm">{a.title}</span>
+                              <span className="text-mc-gray text-xs">{a.date}</span>
+                            </div>
+                            <p className="text-mc-gray text-xs leading-relaxed">{a.body}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
                   <div className="hidden sm:flex items-center gap-2 text-sm">
